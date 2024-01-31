@@ -9,6 +9,7 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
@@ -86,8 +87,21 @@ public class CrptApi {
     // Internal class representing the document structure
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private static class Document {
-        // Define the structure of the document as per your requirements
-        // ...
+        private Description description;
+        private String doc_id;
+        private String doc_status;
+        private String doc_type;
+        private boolean importRequest;
+        private String owner_inn;
+        private String participant_inn;
+        private String producer_inn;
+        private String production_date;
+        private String production_type;
+        private List<Product> products;
+        private String reg_date;
+        private String reg_number;
+
+        // Constructors, getters, setters
 
         @Override
         public String toString() {
@@ -95,7 +109,30 @@ public class CrptApi {
             // Convert the document to JSON using Jackson's ObjectMapper
             return "Document JSON String";
         }
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private static class Description {
+            private String participantInn;
+
+            // Constructors, getters, setters
+        }
+
+        @JsonInclude(JsonInclude.Include.NON_EMPTY)
+        private static class Product {
+            private String certificate_document;
+            private String certificate_document_date;
+            private String certificate_document_number;
+            private String owner_inn;
+            private String producer_inn;
+            private String production_date;
+            private String tnved_code;
+            private String uit_code;
+            private String uitu_code;
+
+            // Constructors, getters, setters
+        }
     }
+
 
     public static void main(String[] args) {
         CrptApi crptApi = new CrptApi(TimeUnit.SECONDS, 5);
@@ -117,6 +154,4 @@ public class CrptApi {
             }
         }
     }
-
-
 }
