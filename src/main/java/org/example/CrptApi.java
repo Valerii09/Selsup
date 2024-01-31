@@ -10,8 +10,6 @@ import org.apache.http.impl.client.HttpClients;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -26,22 +24,38 @@ public class CrptApi {
         this.httpClient = HttpClients.createDefault();
         this.objectMapper = new ObjectMapper();
 
-        // Scheduled task to release permits at fixed intervals
-        Runnable releaseTask = () -> {
-            semaphore.release(requestLimit - semaphore.availablePermits());
-        };
+        Runnable releaseTask = () -> semaphore.release(requestLimit - semaphore.availablePermits());
 
-        // Schedule the task based on the specified timeUnit
         switch (timeUnit) {
             case SECONDS:
-                // Schedule task every second
                 scheduleTask(releaseTask, 1, TimeUnit.SECONDS);
                 break;
             case MINUTES:
-                // Schedule task every minute
                 scheduleTask(releaseTask, 1, TimeUnit.MINUTES);
                 break;
-            // Add more cases as needed
+        }
+    }
+
+    public static void main(String[] args) {
+        CrptApi crptApi = new CrptApi(TimeUnit.SECONDS, 5);
+
+        // Sample JSON request body
+        String requestBody = "{" + "\"description\": {\"participantInn\": \"string\"}," + "\"doc_id\": \"string\"," + "\"doc_status\": \"string\"," + "\"doc_type\": \"LP_INTRODUCE_GOODS\"," + "\"importRequest\": true," + "\"owner_inn\": \"string\"," + "\"participant_inn\": \"string\"," + "\"producer_inn\": \"string\"," + "\"production_date\": \"2020-01-23\"," + "\"production_type\": \"string\"," + "\"products\": [{" + "\"certificate_document\": \"string\"," + "\"certificate_document_date\": \"2020-01-23\"," + "\"certificate_document_number\": \"string\"," + "\"owner_inn\": \"string\"," + "\"producer_inn\": \"string\"," + "\"production_date\": \"2020-01-23\"," + "\"tnved_code\": \"string\"," + "\"uit_code\": \"string\"," + "\"uitu_code\": \"string\"" + "}]," + "\"reg_date\": \"2020-01-23\"," + "\"reg_number\": \"string\"" + "}";
+
+        // Sample signature
+        String signature = "SampleSignature";
+
+        // API endpoint URL
+        String apiUrl = "https://ismp.crpt.ru/api/v3/lk/documents/create";
+
+        // Call the createDocument method multiple times
+        for (int i = 0; i < 10; i++) {
+            crptApi.createDocument(apiUrl, new Document(), signature);
+            try {
+                Thread.sleep(200); // Sleep for 200 milliseconds between calls
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -83,75 +97,51 @@ public class CrptApi {
             semaphore.release(); // Release permit when done
         }
     }
+}
 
-    // Internal class representing the document structure
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
-    private static class Document {
-        private Description description;
-        private String doc_id;
-        private String doc_status;
-        private String doc_type;
-        private boolean importRequest;
-        private String owner_inn;
-        private String participant_inn;
-        private String producer_inn;
-        private String production_date;
-        private String production_type;
-        private List<Product> products;
-        private String reg_date;
-        private String reg_number;
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+class Document {
+    private Description description;
+    private String doc_id;
+    private String doc_status;
+    private String doc_type;
+    private boolean importRequest;
+    private String owner_inn;
+    private String participant_inn;
+    private String producer_inn;
+    private String production_date;
+    private String production_type;
+    private List<Product> products;
+    private String reg_date;
+    private String reg_number;
 
-        // Constructors, getters, setters
+    // Constructors, getters, setters
 
-        @Override
-        public String toString() {
-            // Implement toString method as needed
-            // Convert the document to JSON using Jackson's ObjectMapper
-            return "Document JSON String";
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        private static class Description {
-            private String participantInn;
-
-            // Constructors, getters, setters
-        }
-
-        @JsonInclude(JsonInclude.Include.NON_EMPTY)
-        private static class Product {
-            private String certificate_document;
-            private String certificate_document_date;
-            private String certificate_document_number;
-            private String owner_inn;
-            private String producer_inn;
-            private String production_date;
-            private String tnved_code;
-            private String uit_code;
-            private String uitu_code;
-
-            // Constructors, getters, setters
-        }
-    }
-
-
-    public static void main(String[] args) {
-        CrptApi crptApi = new CrptApi(TimeUnit.SECONDS, 5);
-
-        // Create a sample document and signature
-        Document document = new Document();
-        String signature = "SampleSignature";
-
-        // API endpoint URL
-        String apiUrl = "https://ismp.crpt.ru/api/v3/lk/documents/create";
-
-        // Call the createDocument method multiple times
-        for (int i = 0; i < 10; i++) {
-            crptApi.createDocument(apiUrl, document, signature);
-            try {
-                Thread.sleep(200); // Sleep for 200 milliseconds between calls
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+    @Override
+    public String toString() {
+        return "Document JSON String";
     }
 }
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+class Description {
+    private String participantInn;
+
+    // Constructors, getters, setters
+}
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+class Product {
+    private String certificate_document;
+    private String certificate_document_date;
+    private String certificate_document_number;
+    private String owner_inn;
+    private String producer_inn;
+    private String production_date;
+    private String tnved_code;
+    private String uit_code;
+    private String uitu_code;
+
+    // Constructors, getters, setters
+}
+
